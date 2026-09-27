@@ -1,0 +1,21 @@
+.game-title {
+    display: flex;
+    justify-content: center;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+
+.game-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.game-item {
+    width: 200px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+}
