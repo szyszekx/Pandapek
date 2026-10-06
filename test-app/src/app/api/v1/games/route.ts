@@ -30,7 +30,7 @@ export async function POST(request: Request) {
       steamid: body.steamid,
       received: body.games.length,
     });
-
+  
   } catch (error) {
     console.error(error);
 
