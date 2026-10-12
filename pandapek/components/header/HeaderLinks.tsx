@@ -1,0 +1,47 @@
+"use client";
+
+import { cn } from "@/lib/utils";
+import { HeaderLink } from "@/types/common";
+import { ExternalLink } from "lucide-react";
+import { usePathname } from "next/dist/client/components/navigation";
+import Link from "next/dist/client/link";
+
+const HeaderLinks = () => {
+  const pathname = usePathname();
+  
+  const links: HeaderLink[] = [
+      {
+          "name": "Strona główna",
+          "href": "/"
+      }
+  ];
+
+
+  return (
+    <div className="hidden md:flex flex-row items-center gap-x-2 text-sm font-medium text-muted-500">
+      {links.map((link) => (
+        <Link
+          key={link.name}
+          href={link.href}
+          title={link.name}
+          prefetch={link.target && link.target === "_blank" ? false : true}
+          target={link.target || "_self"}
+          rel={link.rel || undefined}
+          className={cn(
+            "rounded-xl px-4 py-2 flex items-center gap-x-1 hover:bg-accent-foreground/10 hover:text-accent-foreground",
+            pathname === link.href && "font-semibold text-accent-foreground"
+          )}
+        >
+          {link.name}
+          {link.target && link.target === "_blank" && (
+            <span className="text-xs">
+              <ExternalLink className="w-4 h-4" />
+            </span>
+          )}
+        </Link>
+      ))}
+    </div>
+  );
+};
+
+export default HeaderLinks;
