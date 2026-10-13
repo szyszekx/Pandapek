@@ -3,9 +3,11 @@ import Image from "next/image";
 import { Button } from "../ui/button";
 import Link from "next/dist/client/link";
 import { GameSearch } from "./search";
+import { getSteamSession } from "@/lib/auth/steam-session";
+import { LoginOptions } from "./login-options";
 
-function Header({searchBar=false}: {searchBar?: boolean}) {
-
+async function Header({searchBar=false}: {searchBar?: boolean}) {
+  const session = await getSteamSession()
   return (
     <header className="mx-auto flex max-w-6xl items-center justify-between px-4">
       <div className="flex items-center space-x-6 md:space-x-12">
@@ -30,7 +32,11 @@ function Header({searchBar=false}: {searchBar?: boolean}) {
             asChild
             variant="outline"
             className="rounded-full border-[#B6A6EA] bg-transparent text-[#B6A6EA] hover:bg-[#B6A6EA]/10 hover:text-white">
-            <Link href="/login">Zaloguj się</Link>
+            {!session ? (
+              <Link href="/login">Zaloguj się</Link>
+            ): (
+              <LoginOptions/>
+            )}
           </Button>
       </nav>
     </header>

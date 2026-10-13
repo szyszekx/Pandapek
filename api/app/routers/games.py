@@ -69,7 +69,8 @@ def get_games(
                     gatunek,
                     data_premiery,
                     kategoriaWiekowa,
-                    srednia_ocen
+                    srednia_ocen,
+                    app_id
                 FROM Gra
                 {where_clause}
                 ORDER BY {order_by}, id_Gra ASC
@@ -104,7 +105,8 @@ def get_game(
                     gatunek,
                     data_premiery,
                     kategoriaWiekowa,
-                    srednia_ocen
+                    srednia_ocen,
+                    app_id
                 FROM Gra
                 WHERE id_Gra = :game_id
             """),
@@ -154,7 +156,8 @@ def create_game(
                     gatunek,
                     data_premiery,
                     kategoriaWiekowa,
-                    srednia_ocen
+                    srednia_ocen,
+                    app_id
                 )
                 VALUES (
                     :id_Gra,
@@ -165,7 +168,8 @@ def create_game(
                     :gatunek,
                     :data_premiery,
                     :kategoriaWiekowa,
-                    :srednia_ocen
+                    :srednia_ocen,
+                    :app_id
                 )
             """),
             game.model_dump()

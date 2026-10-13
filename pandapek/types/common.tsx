@@ -5,11 +5,3 @@ export interface HeaderLink {
   target?: string;
   rel?: string;
 };
-
-export interface Review {
-    id: number;
-    author: string;
-    content: string;
-    rating: number;
-    game: string;
-}

@@ -11,7 +11,8 @@ class GameCreate(BaseModel):
     gatunek: Optional[str] = None
     data_premiery: Optional[str] = None
     kategoriaWiekowa: Optional[str] = None
-    srednia_ocen: Optional[float] = Field(default=None, ge=0, le=5)
+    srednia_ocen: Optional[float] = Field(default=None, ge=0, le=10)
+    app_id: Optional[int] = None
 
 class PlatformCreate(BaseModel):
     id_Platformy: int

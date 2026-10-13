@@ -29,6 +29,7 @@ export default async function GamesPage({searchParams}: GamesPageProps) {
         limit: 25,
         sort,
     });
+    console.log(items)
 
     
     return(

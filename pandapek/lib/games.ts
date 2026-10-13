@@ -10,6 +10,7 @@ export type Game = {
     data_premiery: string;
     kategoriaWiekowa: string;
     srednia_ocen: number;
+    app_id: number;
 };
 
 type GameResponse = {
@@ -26,6 +27,38 @@ type GameFilters = {
     limit?: number;
     sort?: string;
 }
+
+type GameCoverArguments = {
+    app_id: number;
+}
+
+
+
+type GameCoverRes = {
+    image_url: string;
+}
+
+
+export async function getGameCover({
+    app_id = 1
+}: GameCoverArguments): Promise<GameCoverRes> {
+    const url = `https://store.steampowered.com/api/appdetails?appids=${app_id}&l=polish&format=json`
+
+    const response = await fetch(`${url}`, {
+        method: "GET",
+        headers: {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",   
+        },
+        next: { revalidate: 300 },
+    })
+    if (!response.ok) {
+        throw new Error("Steam Cover API Error")
+    }
+    const data = (await response.json())[app_id]
+
+    return {image_url: data.data.header_image};
+}
+
 
 export async function getGames({
     query = "",
@@ -68,4 +101,28 @@ export async function getGames({
 
     return (await response.json()) as GameResponse;
 
+}
+
+export async function getGame({id}: {id: number}): Promise<Game> {
+    const apiKey = process.env.GAME_API_KEY
+    const apiUrl = process.env.GAME_API_URL
+
+    if (!apiKey) {
+        throw new Error("Missing API Key")
+    }
+
+    const response = await fetch(`${apiUrl}/api/games/${id}`, {
+        method: "GET",
+        headers: {
+            "Accept": "application/json",   
+            "x-api-key": apiKey,
+        },
+        next: { revalidate: 300 },
+    })
+
+    if (!response.ok) {
+        console.log(response.status)
+    }
+
+    return (await response.json()) as Game;
 }

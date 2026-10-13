@@ -58,6 +58,35 @@ def get_user(
 
     return dict(user)
 
+@router.get("/steam/{login}")
+def get_user(
+    login: int,
+    _: bool = Depends(verify_api_key)
+):
+    with engine.connect() as connection:
+        result = connection.execute(
+            text("""
+                SELECT
+                    id_User,
+                    login,
+                    haslo,
+                    data_zalozenia
+                FROM User
+                WHERE login = :login
+            """),
+            {"login": login}
+        )
+
+        user = result.mappings().first()
+
+    if user is None:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+
+    return dict(user)
+
 
 @router.post("")
 def create_user(
@@ -98,13 +127,11 @@ def create_user(
         connection.execute(
             text("""
                 INSERT INTO User (
-                    id_User,
                     login,
                     haslo,
                     data_zalozenia
                 )
                 VALUES (
-                    :id_User,
                     :login,
                     :haslo,
                     :data_zalozenia

@@ -1,5 +1,5 @@
 import datetime
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import text
 
 from app.database import engine
@@ -12,13 +12,38 @@ router = APIRouter(
     tags=["Reviews"]
 )
 
-
 @router.get("")
-def get_reviews(_: bool = Depends(verify_api_key)):
+def get_reviews(
+    game: int | None = Query(None),
+    page: int | None = Query(default=1, ge=1),
+    limit: int | None = Query(default=10, ge=1, le=50) ,
+    _: bool = Depends(verify_api_key),
+    ):    
     """Pobiera wszystkie opinie."""
+
+    offset = (page-1)*limit
+
+    parameters = {
+        "limit": limit,
+        "offset": offset,
+    }
+    where_clause = ""
+    if game:
+        where_clause = f"WHERE id_Gra = :game"
+        parameters["game"] = f"{game}"
+
     with engine.connect() as connection:
+        total = connection.execute(
+            text(f"""
+                 SELECT COUNT(*) 
+                 FROM Opinia 
+                 {where_clause}
+            """),
+            parameters
+        ).scalar_one()
+
         result = connection.execute(
-            text("""
+            text(f"""
                 SELECT
                     Id_Opinia,
                     id_User,
@@ -32,7 +57,58 @@ def get_reviews(_: bool = Depends(verify_api_key)):
                     czy_edytowano,
                     data_edycji
                 FROM Opinia
-            """)
+                {where_clause}
+                LIMIT :limit OFFSET :offset
+            """),
+            parameters
+        )
+        reviews = [dict(row) for row in result.mappings()]
+        return {
+            "reviews": reviews,
+            "total": total,
+            "page": page,
+            "limit": limit,
+            "total_pages": (total + limit - 1) // limit}
+
+
+@router.get("/najnowsze")
+def get_reviews(
+    game_id: int | None = Query(default=None),
+    limit: int | None = Query(default=16, ge=1, le=20),
+    _: bool = Depends(verify_api_key)):
+    """Pobiera wszystkie opinie."""
+
+    parameters = {
+        "limit": int(limit),
+    }
+
+    where_clause = ""
+    if game_id:
+        where_clause = f"WHERE id_Gra = :gameid"
+        parameters["gameid"] = f"{game_id}"
+
+
+    with engine.connect() as connection:
+        result = connection.execute(
+            text(f"""
+                SELECT
+                    Id_Opinia,
+                    id_User,
+                    id_Gra,
+                    Tresc,
+                    Ocena,
+                    czy_poleca,
+                    czas_gry,
+                    liczba_polubien,
+                    data_dodania,
+                    czy_edytowano,
+                    data_edycji
+                FROM Opinia
+                {where_clause}
+                ORDER BY data_dodania DESC
+                LIMIT :limit
+            """),
+            parameters
         )
 
         return [dict(row) for row in result.mappings()]
@@ -143,6 +219,79 @@ def get_opinie_by_game(
         )
         return [dict(row) for row in result.mappings()]
 
+@router.get("/gra/avg/{game_id}")
+def get_opinie_by_game(
+    game_id: int,
+    _: bool = Depends(verify_api_key)
+):
+    """Podaje srednia wartosc opini dla danej gry."""
+    with engine.connect() as connection:
+        result = connection.execute(
+            text("""
+                SELECT AVG(Ocena) AS Avg_Ocena
+                FROM Opinia
+                WHERE id_Gra = :game_id
+            """),
+            {"game_id": game_id}
+        )
+        avg_res = result.fetchall()
+        res = avg_res[0][0]
+        if res ==  None:
+            return 0
+        return res
+    
+@router.get("/gra/total/{game_id}")
+def get_opinie_by_game(
+    game_id: int,
+    _: bool = Depends(verify_api_key)
+):
+    """Podaje srednia wartosc opini dla danej gry."""
+    with engine.connect() as connection:
+        result = connection.execute(
+            text("""
+                SELECT COUNT(*) AS G_Count
+                FROM Opinia
+                WHERE id_Gra = :game_id
+            """),
+            {"game_id": game_id}
+        )
+        count_res = result.fetchall()
+        res = count_res[0][0]
+        return res
+
+@router.get("/gra/ranges/{game_id}")
+def get_opinie_by_game(
+    game_id: int,
+    _: bool = Depends(verify_api_key)
+):
+    """Podaje srednia wartosc opini dla danej gry."""
+    with engine.connect() as connection:
+        result = connection.execute(
+            text("""
+                SELECT 
+                    ocena.ocena,
+                    COUNT(o.Ocena) AS G_Count
+                FROM (
+                    SELECT 0 AS ocena
+                    UNION ALL SELECT 1
+                    UNION ALL SELECT 2
+                    UNION ALL SELECT 3
+                    UNION ALL SELECT 4
+                    UNION ALL SELECT 5
+                ) AS ocena
+                LEFT JOIN Opinia o
+                    ON o.Ocena = ocena.ocena
+                    AND o.id_Gra = :game_id
+                GROUP BY ocena.ocena
+                ORDER BY ocena.ocena DESC
+            """),
+            {"game_id": game_id}
+        ).mappings().all()
+        distr = {
+            row["ocena"]: row["G_Count"]
+            for row in result
+        }
+        return distr
 
 # --- ENDPOINTY ZWIĄZANE Z KONKRETNYM ID OPINII ---
 

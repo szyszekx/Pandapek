@@ -115,16 +115,7 @@ def games():
             "games": steam_data.get("response", {}).get("games", [])
         }
 
-        # Wysyłamy dane do Next.js
-        post_response = requests.post(
-            "http://localhost:3000/api/v1/games",
-            json=payload,
-            timeout=10
-        )
 
-        post_response.raise_for_status()
-
-        # Przekierowujemy przeglądarkę użytkownika
         return redirect(f"http://localhost:3000/games?steamid={steam_id}")
 
     except requests.RequestException as error:
