@@ -4,13 +4,14 @@ export type Review = {
     id_Gra: number,
     Tresc: string,
     Ocena: number,
-    czy_polce: boolean,
+    czy_poleca: boolean,
     czas_gry: number,
     liczba_polubien: number,
     data_dodania: string,
     czy_edytowano: boolean,
     data_edycji?: string,
 }
+
 
 type ReviewResponse = {
     total: number;
@@ -56,7 +57,7 @@ export async function getReviews({
             "Accept": "application/json",   
             "x-api-key": apiKey,
         },
-        next: { revalidate: 300 },
+        cache: "no-store",
     })
 
     if (!response.ok) {
@@ -170,6 +171,34 @@ export async function getAvg({ game_id }: { game_id: number }): Promise<number> 
 
     return (await response.json()) as number;
 }
+
+
+export async function getReview({ review_id }: { review_id: number }): Promise<Review> {
+    const apiKey = process.env.GAME_API_KEY;
+    const apiUrl = process.env.GAME_API_URL;
+
+    if (!apiKey) {
+        throw new Error("Missing API Key");
+    }
+    
+
+
+    const response = await fetch(`${apiUrl}/api/reviews/${review_id}`, {
+        method: "GET",
+        headers: {
+            Accept: "application/json",
+            "x-api-key": apiKey,
+        },
+        next: { revalidate: 300 },
+    });
+
+    if (!response.ok) {
+        console.log(response.status);
+    }
+
+    return (await response.json()) as Review;
+}
+
 export async function getRanges({ game_id }: { game_id: number }) {
     const apiKey = process.env.GAME_API_KEY;
     const apiUrl = process.env.GAME_API_URL;
@@ -193,3 +222,4 @@ export async function getRanges({ game_id }: { game_id: number }) {
 
     return (await response.json());
 }
+

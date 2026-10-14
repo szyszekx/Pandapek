@@ -1,4 +1,5 @@
 
+import { getOwnedGames, importSteamGames } from "@/lib/auth/steam";
 import { isRegistered, registerUser } from "@/lib/users";
 import { NextRequest, NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "node:crypto";
@@ -126,7 +127,9 @@ export async function GET(request: NextRequest) {
   try {
     const isRegister = await isRegistered({steamId})
     if (!isRegister) {
-        await registerUser({login:steamId})
+      const userId = await registerUser({login:steamId})
+      const games = await getOwnedGames({id:steamId})
+      const result = await importSteamGames(games, userId);
     }
   } catch(error) {
     console.log(error)

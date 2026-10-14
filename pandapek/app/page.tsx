@@ -34,16 +34,25 @@ export default async function Page() {
         <section className="mx-auto max-w-6xl px-6 pb-32">
           <h2 className="mb-16 text-center text-3xl font-semibold text-[#B6A6EA]">Najnowsze opinie</h2>
             {reviews.length > 0 ? (
-              <Carousel className="w-full max-w-[12rem] sm:max-w-xs md:max-w-sm">
-                <CarouselContent className="-ml-1">
+              <Carousel
+                opts={{
+                  align: "start",
+                  loop: false,
+                }}
+                className="mx-auto w-full"
+              >
+                <CarouselContent className="-ml-4">
                   {reviews.map((review) => (
-                    <CarouselItem key={review.Id_Opinia} className="basics-1/2 pl-1 lg:basics-1/3">
-                        <ReviewCard review={review}/>
+                    <CarouselItem
+                      key={review.Id_Opinia}
+                      className="basis-full pl-4 sm:basis-1/2 lg:basis-1/3">
+                      <ReviewCard review={review} />
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                <CarouselPrevious />
-                <CarouselNext />
+
+                <CarouselPrevious className="border-[#B0A5E8]/20 bg-[#1B1433] text-[#B0A5E8] hover:bg-[#6C63FF]/20" />
+                <CarouselNext className="border-[#B0A5E8]/20 bg-[#1B1433] text-[#B0A5E8] hover:bg-[#6C63FF]/20" />
               </Carousel>
             ) : (
               <p className="text-center text-[#8983AB]">Brak opinii do wyświetlenia.</p>

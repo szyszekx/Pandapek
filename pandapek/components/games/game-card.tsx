@@ -7,7 +7,6 @@ import { getAvg } from "@/lib/reviews";
 
 async function GameCard({game}: {game: Game}) {
   const logoUrl = `https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/${game.app_id}/logo.png`;
-  console.log(logoUrl)
   const avg = await getAvg({ game_id: game.id_Gra })
   return (
     <div className='w-full flex flex-col gap-4'>

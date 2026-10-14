@@ -8,21 +8,33 @@ import Rating from "../main/rating";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { ReviewManagment } from "./review-managment";
+import { getSteamSession } from "@/lib/auth/steam-session";
+import { addLike } from "@/lib/reviewadd";
+import { LikeButton } from "./like-button";
+import GameMangmentSection from "./game-managment-section";
 
-async function BigReviewCard({review}: {review: Review}) {
+type BigReviewCardProps = {
+  review: Review,
+  onLike?: () => void;
+};
+
+
+async function BigReviewCard({review,onLike}: BigReviewCardProps) {
   const date = new Date(review.data_dodania).toLocaleDateString("pl-Pl", {
     day: "numeric",
     month: "short",
     year: "numeric"
   })
-  const game_id = Number(review.id_Gra)
   const user_id = review.id_User
 
-  const game = await getGame({ id: game_id })
   const user = await getUser({ id_user: user_id })
   const SteamID = user.login
   const { avatar_url, nickname } = await getSteamUser({ id:SteamID })
-
+  let can_manage = false
+  const session = await getSteamSession()
+  if (session) {
+    can_manage = session.steamId == SteamID
+  }
   return (
     <div className="flex flex-col justify-flex-start
     border border-[#B0A5E8]/20 
@@ -37,7 +49,7 @@ async function BigReviewCard({review}: {review: Review}) {
                         {nickname}
                     </p>
                     <p className="text-xs text-[#B0A5E8]">
-                        {review.czas_gry} godzin w grze
+                        {review.czas_gry} {parseGodziny({time: review.czas_gry})} w grze
                     </p>
                     <Rating value={review.Ocena}/>
                 </div>
@@ -47,7 +59,7 @@ async function BigReviewCard({review}: {review: Review}) {
                     <Calendar/>
                     {date}
                 </Badge>
-                <ReviewManagment/>
+                <GameMangmentSection cont={review.Tresc} review={review} canManage={can_manage} gameId={review.id_Gra} reviewId={review.Id_Opinia}/>
             </div>
         </div>
 
@@ -56,21 +68,30 @@ async function BigReviewCard({review}: {review: Review}) {
         </p>
         <Separator/>
         <div className="flex justify-between mt-2">
-            <Button className="bg-[#1B1433]/80 p-3 rounded-md text-[#B0A5E8] border border-[#B0A5E8]/20 ">
-                <ThumbsUp/>
-                Pomocna ({review.liczba_polubien})
-            </Button>
+            <LikeButton reviewId={review.Id_Opinia} gameId={review.id_Gra} liczbapolubien={review.liczba_polubien}/>
         </div>
 
     </div>
   );
 };
 
-function parseGodziny({time}: {time:number}) {
-    if(time == 1) return "Godzina"
-    if(time >= 2 && time <= 4) return "Godziny"
-    if(time >= 5) return "Godzin"
-    
+
+function parseGodziny({ time }: { time: number }): string {
+    const lastDigit = time % 10;
+    const lastTwoDigits = time % 100;
+
+    if (time === 1) return "godzina";
+
+    if (
+        lastDigit >= 2 &&
+        lastDigit <= 4 &&
+        (lastTwoDigits < 12 || lastTwoDigits > 14)
+    ) {
+        return "godziny";
+    }
+
+    return "godzin";
 }
+
 
 export default BigReviewCard;

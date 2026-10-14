@@ -22,9 +22,9 @@ type RatingDistribution = {
 type RatingCardProps = {
   averageRating: number;
   totalReviews: number;
-  recommendedPercent: number;
   distribution: RatingDistribution;
   onWriteReview?: () => void;
+  canWriteReview: boolean;
 };
 
 export default function RatingCard({
@@ -32,6 +32,7 @@ export default function RatingCard({
   totalReviews,
   distribution,
   onWriteReview,
+  canWriteReview,
 }: RatingCardProps) {
   const ratings = [5, 4, 3, 2, 1] as const;
 
@@ -178,7 +179,7 @@ export default function RatingCard({
       <Button
         type="button"
         onClick={onWriteReview}
-        disabled={!onWriteReview}
+        disabled={!canWriteReview}
         className="
           mt-5 h-10 w-full
           rounded-lg bg-[#6C63FF]

@@ -45,3 +45,9 @@ yarn-error.log*
 
 
 pandapek/.gitignore
+
+# typescript
+next-env.d.ts
+__pycache__
+.cloudflared.exe
+.xy.py
