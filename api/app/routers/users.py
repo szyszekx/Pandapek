@@ -124,7 +124,7 @@ def create_user(
                 detail="User with this login already exists"
             )
 
-        connection.execute(
+        result = connection.execute(
             text("""
                 INSERT INTO User (
                     login,
@@ -139,10 +139,10 @@ def create_user(
             """),
             user.model_dump()
         )
-
+    userid = result.lastrowid
     return {
         "message": "User created",
-        "id_User": user.id_User
+        "id_User": userid
     }
 
 

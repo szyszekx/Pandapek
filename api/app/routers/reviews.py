@@ -355,10 +355,9 @@ def create_review(
                 detail="Review with this ID already exists"
             )
 
-        connection.execute(
+        result = connection.execute(
             text("""
                 INSERT INTO Opinia (
-                    Id_Opinia,
                     id_User,
                     id_Gra,
                     Tresc,
@@ -371,7 +370,6 @@ def create_review(
                     data_edycji
                 )
                 VALUES (
-                    :Id_Opinia,
                     :id_User,
                     :id_Gra,
                     :Tresc,
@@ -386,10 +384,10 @@ def create_review(
             """),
             review.model_dump()
         )
-
+    idopinia = result.lastrowid
     return {
         "message": "Review created",
-        "Id_Opinia": review.Id_Opinia
+        "Id_Opinia": idopinia
     }
 
 

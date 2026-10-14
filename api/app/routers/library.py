@@ -28,6 +28,50 @@ def get_library(_: bool = Depends(verify_api_key)):
 
         return [dict(row) for row in result.mappings()]
 
+@router.get("/check/{user}/{game}")
+def get_library(
+    user: int,
+    game: int,
+    _: bool = Depends(verify_api_key)):
+    with engine.connect() as connection:
+        result = connection.execute(
+            text("""
+                SELECT
+                    id_biblioteki,
+                    id_User,
+                    id_Gra,
+                    id_Platformy
+                FROM Biblioteka_uzyt
+                WHERE id_User = :user AND
+                id_Gra = :game
+            """),
+            {"user": f"{user}","game": f"{game}"}
+        ).mappings().first()
+
+        return {
+            "inLibrary": bool(result)
+        }
+
+@router.get("/users/{user}")
+def get_library(
+    user: int,
+    _: bool = Depends(verify_api_key)):
+    with engine.connect() as connection:
+        result = connection.execute(
+            text("""
+                SELECT
+                    id_biblioteki,
+                    id_User,
+                    id_Gra,
+                    id_Platformy
+                FROM Biblioteka_uzyt
+                WHERE id_User = :user
+            """),
+            {"user": f"{user}"}
+        ).mappings().all()
+
+        return [dict(row) for row in result]
+
 
 @router.get("/{library_id}")
 def get_library_entry(
@@ -83,13 +127,11 @@ def create_library_entry(
         connection.execute(
             text("""
                 INSERT INTO Biblioteka_uzyt (
-                    id_biblioteki,
                     id_User,
                     id_Gra,
                     id_Platformy
                 )
                 VALUES (
-                    :id_biblioteki,
                     :id_User,
                     :id_Gra,
                     :id_Platformy

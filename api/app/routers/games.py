@@ -123,6 +123,41 @@ def get_game(
 
     return dict(game)
 
+@router.get("/by-steam-app/{app_id}")
+def get_game(
+    app_id: int,
+    _: bool = Depends(verify_api_key)
+):
+    with engine.connect() as connection:
+        result = connection.execute(
+            text("""
+                SELECT
+                    id_Gra,
+                    Nazwa,
+                    Opis,
+                    Producent,
+                    Wydawca,
+                    gatunek,
+                    data_premiery,
+                    kategoriaWiekowa,
+                    srednia_ocen,
+                    app_id
+                FROM Gra
+                WHERE app_id = :app_id
+            """),
+            {"app_id": app_id}
+        )
+
+        game = result.mappings().first()
+
+    if game is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Game not found"
+        )
+
+    return dict(game)
+
 
 @router.post("")
 def create_game(
@@ -145,10 +180,9 @@ def create_game(
                 detail="Game with this ID already exists"
             )
 
-        connection.execute(
+        result = connection.execute(
             text("""
                 INSERT INTO Gra (
-                    id_Gra,
                     Nazwa,
                     Opis,
                     Producent,
@@ -160,7 +194,6 @@ def create_game(
                     app_id
                 )
                 VALUES (
-                    :id_Gra,
                     :Nazwa,
                     :Opis,
                     :Producent,
@@ -174,10 +207,10 @@ def create_game(
             """),
             game.model_dump()
         )
-
+    gameid = result.lastrowid
     return {
         "message": "Game created",
-        "id_Gra": game.id_Gra
+        "id_Gra": gameid
     }
 
 
