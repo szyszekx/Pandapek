@@ -6,17 +6,17 @@ const STEAM_OPENID_URL =
   "https://steamcommunity.com/openid/login";
 
 export async function GET(request: NextRequest) {
-  const origin = process.env.APP_URL;
+  const baseUrl = process.env.SITE_URL!;
 
-  if (!origin) {
+  if (!baseUrl) {
     return NextResponse.json(
       { error: "APP_URL is not configured" },
       { status: 500 }
     );
   }
 
-  const callbackUrl =
-    `${origin}/api/auth/steam/callback`;
+  const callbackUrl = `${baseUrl}/api/auth/steam/callback`;
+  const realm = `${baseUrl}/`;
 
   const nonce = randomBytes(32).toString("hex");
 
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
       "http://specs.openid.net/auth/2.0",
     "openid.mode": "checkid_setup",
     "openid.return_to": `${callbackUrl}?state=${nonce}`,
-    "openid.realm": origin,
+    "openid.realm": realm,
     "openid.identity":
       "http://specs.openid.net/auth/2.0/identifier_select",
     "openid.claimed_id":

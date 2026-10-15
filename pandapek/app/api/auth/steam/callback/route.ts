@@ -19,12 +19,14 @@ function secureCompare(a: string, b: string) {
   );
 }
 
+
+
 export async function GET(request: NextRequest) {
-  const origin = process.env.APP_URL;
+  const origin = process.env.SITE_URL!;
   const secret = process.env.AUTH_SECRET;
 
   if (!origin || !secret) {
-    return NextResponse.json(
+    return NextResponse.json( 
       { error: "Authentication is not configured" },
       { status: 500 }
     );
@@ -133,8 +135,7 @@ export async function GET(request: NextRequest) {
     }
   } catch(error) {
     console.log(error)
-    return NextResponse.redirect(new URL("/login?error=registration", request.url)
-  );
+    return redirectTo("/login?error=registration");
   }
 
 

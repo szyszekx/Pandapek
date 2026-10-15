@@ -1,0 +1,41 @@
+services:
+  nextjs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+
+    environment:
+      NODE_ENV: production
+      GAME_API_URL: ${GAME_API_URL}
+      GAME_API_KEY: ${GAME_API_KEY}
+      STEAM_API_KEY: ${STEAM_API_KEY}
+      STEAM_AUTH_SECRET: ${STEAM_AUTH_SECRET}
+      APP_URL: ${APP_URL}
+      AUTH_SECRET: ${AUTH_SECRET}
+      SITE_URL: ${SITE_URL}
+
+    expose:
+      - "3000"
+
+    networks:
+      - pandapek-network
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+
+    command: tunnel --no-autoupdate run
+
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
+
+    depends_on:
+      - nextjs
+
+    networks:
+      - pandapek-network
+
+networks:
+  pandapek-network:
+    driver: bridge

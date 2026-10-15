@@ -83,7 +83,7 @@ export async function getNewest(): Promise<Review[]> {
             Accept: "application/json",
             "x-api-key": apiKey,
         },
-        next: { revalidate: 300 },
+        cache: "no-store",
     });
 
     if (!response.ok) {
@@ -111,7 +111,7 @@ export async function getNewestGame({ game_id }: { game_id: string}): Promise<Re
             Accept: "application/json",
             "x-api-key": apiKey,
         },
-        next: { revalidate: 300 },
+        cache: "no-store",
     });
 
     if (!response.ok) {
@@ -136,7 +136,7 @@ export async function getTotal({ game_id }: { game_id: number }): Promise<number
             Accept: "application/json",
             "x-api-key": apiKey,
         },
-        next: { revalidate: 300 },
+        cache: "no-store",
     });
 
     if (!response.ok) {
@@ -162,7 +162,7 @@ export async function getAvg({ game_id }: { game_id: number }): Promise<number> 
             Accept: "application/json",
             "x-api-key": apiKey,
         },
-        next: { revalidate: 300 },
+        cache: "no-store",
     });
 
     if (!response.ok) {
@@ -189,7 +189,7 @@ export async function getReview({ review_id }: { review_id: number }): Promise<R
             Accept: "application/json",
             "x-api-key": apiKey,
         },
-        next: { revalidate: 300 },
+        cache: "no-store",
     });
 
     if (!response.ok) {
@@ -213,7 +213,7 @@ export async function getRanges({ game_id }: { game_id: number }) {
             Accept: "application/json",
             "x-api-key": apiKey,
         },
-        next: { revalidate: 300 },
+        cache: "no-store",
     });
 
     if (!response.ok) {
