@@ -105,7 +105,7 @@ def get_reviews(
                     data_edycji
                 FROM Opinia
                 {where_clause}
-                ORDER BY data_dodania DESC
+                ORDER BY data_dodania ASC
                 LIMIT :limit
             """),
             parameters

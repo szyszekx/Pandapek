@@ -1,6 +1,6 @@
 
 import { getOwnedGames, importSteamGames } from "@/lib/auth/steam";
-import { isRegistered, registerUser } from "@/lib/users";
+import { getUserBySteam, isRegistered, registerUser } from "@/lib/users";
 import { NextRequest, NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "node:crypto";
 
@@ -126,18 +126,54 @@ export async function GET(request: NextRequest) {
   if (!steamId) {
     return redirectTo("/login?error=invalid_steam_id");
   }
-  try {
-    const isRegister = await isRegistered({steamId})
-    if (!isRegister) {
-      const userId = await registerUser({login:steamId})
-      const games = await getOwnedGames({id:steamId})
-      const result = await importSteamGames(games, userId);
+
+try {
+  const isRegister = await isRegistered({ steamId });
+
+  let userId: number;
+
+  if (!isRegister) {
+    userId = await registerUser({
+      login: steamId,
+    });
+
+    console.log("User registered:", userId);
+  } else {
+    const user = await getUserBySteam({
+      steamId,
+    });
+
+    if (!user) {
+      throw new Error("Registered user not found");
     }
-  } catch(error) {
-    console.log(error)
-    return redirectTo("/login?error=registration");
+
+    userId = Number(user.id_User);
   }
 
+  if (!Number.isSafeInteger(userId) || userId <= 0) {
+    throw new Error(`Invalid user ID: ${userId}`);
+  }
+
+  try {
+    const games = await getOwnedGames({
+      id: steamId,
+    });
+
+    console.log("Steam games found:", games.length);
+
+    const result = await importSteamGames(
+      games,
+      userId
+    );
+
+    console.log("Library import result:", result);
+  } catch (error) {
+    console.error("Steam library import failed:", error);
+  }
+} catch (error) {
+  console.error("Steam registration failed:", error);
+  return redirectTo("/login?error=registration");
+}
 
 
   const expiresAt = Math.floor(Date.now() / 1000) + 86400;

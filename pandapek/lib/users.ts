@@ -1,5 +1,3 @@
-import { getOwnedGames, importSteamGames } from "./auth/steam";
-
 export type User = {
     id_User: number,
     login: string,

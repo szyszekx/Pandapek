@@ -255,9 +255,48 @@ async function createGame(
 export async function getUserLibrary(
   userId: number
 ): Promise<LibraryItem[]> {
-  return apiRequest<LibraryItem[]>(
-    `/api/library/users/${userId}`
+    if (!Number.isSafeInteger(userId) || userId <= 0) {
+    throw new Error(`Invalid user ID: ${userId}`);
+  }
+
+  const apiUrl = process.env.GAME_API_URL;
+  const apiKey = process.env.GAME_API_KEY;
+
+  if (!apiUrl || !apiKey) {
+    throw new Error("Missing API configuration");
+  }
+
+  const response = await fetch(
+    `${apiUrl}/api/library/users/${userId}`,
+    {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        "x-api-key": apiKey,
+      },
+      cache: "no-store",
+    }
   );
+
+  if (response.status === 404) {
+    return [];
+  }
+
+  if (!response.ok) {
+    const error = await response.text();
+
+    throw new Error(
+      `API Error ${response.status}: /api/library/users/${userId} - ${error}`
+    );
+  }
+
+  const data: LibraryItem[] = await response.json();
+
+  if (!Array.isArray(data)) {
+    throw new Error("Invalid library response: expected array");
+  }
+
+  return data as LibraryItem[];
 }
 
 async function addGameToLibrary(
@@ -279,8 +318,11 @@ export async function importSteamGames(
   steamGames: SteamGame[],
   userId: number
 ) {
-  const librarySet = new Set<number>();
+  const library = await getUserLibrary(userId);
 
+  const librarySet = new Set<number>(
+    library.map((item) => item.id_Gra)
+  );
   let added = 0;
   let skipped = 0;
   let failed = 0;
